@@ -1956,6 +1956,7 @@
 		27F4244F1D469A68007ADEE4 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		27F424551D46A246007ADEE4 /* SVPulsingAnnotationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVPulsingAnnotationView.h; sourceTree = "<group>"; };
 		27F424561D46A246007ADEE4 /* SVPulsingAnnotationView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVPulsingAnnotationView.m; sourceTree = "<group>"; };
+		2D4325C41D497708006BCAC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
 		A0847DAF1D46D12100215DC9 /* icons-hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "icons-hd.png"; path = "Pokemons/larger/icons-hd.png"; sourceTree = "<group>"; };
 		AEFA37F11D47D04800DEE95C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = en; path = en.lproj/pokemon.json; sourceTree = "<group>"; };
 		AEFA37F21D47D04A00DEE95C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = de; path = de.lproj/pokemon.json; sourceTree = "<group>"; };
@@ -3189,8 +3190,8 @@
 				TargetAttributes = {
 					27F385571D4130B30004A1B3 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = C6D6DBHW5C;
-						DevelopmentTeamName = "Dimitri Dessus";
+						DevelopmentTeam = Z56G8V2664;
+						DevelopmentTeamName = "Michael Dimore";
 						ProvisioningStyle = Automatic;
 					};
 					27F385701D4130B30004A1B3 = {
@@ -4252,6 +4253,7 @@
 			children = (
 				27F385651D4130B30004A1B3 /* Base */,
 				AEFA37FF1D49292D00DEE95C /* de */,
+				2D4325C41D497708006BCAC3 /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -4327,7 +4329,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -4367,7 +4369,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -4381,8 +4383,9 @@
 				INFOPLIST_FILE = iPokeGo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.dimitri-dessus.iPokeGo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikey.iPokeGo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -4394,8 +4397,9 @@
 				INFOPLIST_FILE = iPokeGo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.dimitri-dessus.iPokeGo";
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikey.iPokeGo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
