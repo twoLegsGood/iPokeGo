@@ -7,12 +7,14 @@
 //
 
 #import <MapKit/MapKit.h>
+#import "CoreDataEntities.h"
 
 @interface PokemonAnnotation : MKPointAnnotation
 
 @property int pokemonID;
-@property BOOL hidePokemon;
 @property NSDate *expirationDate;
 @property NSString *spawnpointID;
+
+- (instancetype)initWithPokemon:(Pokemon *)pokemon andLocalization:(NSDictionary *)localization;
 
 @end

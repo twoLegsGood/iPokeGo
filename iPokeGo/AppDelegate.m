@@ -7,44 +7,204 @@
 //
 
 #import "AppDelegate.h"
+#import "TimerLabel.h"
+#import "iPokeServerSync.h"
+#import "CoreDataPersistance.h"
+#import "CoreDataEntities.h"
+#import "PokemonNotifier.h"
+#import "SettingsTableViewController.h"
 
-@interface AppDelegate ()
+@interface AppDelegate() <CLLocationManagerDelegate>
+
+@property NSTimer *dateUpdateTimer;
+@property NSTimer *dataFetchTimer;
+@property NSTimer *dataCleanTimer;
+@property iPokeServerSync *server;
+@property PokemonNotifier *notifier;
+@property CLLocationManager *backgroundManager;
 
 @end
 
 @implementation AppDelegate
 
+NSString * const AppDelegateNotificationTapped = @"Poke.AppDelegateNotificationTapped";
+
+static NSTimeInterval AppDelegateTimerRefreshFrequency = 1.0;
+static NSTimeInterval AppDelegateTimerCleanFrequency = 1.0;
+static NSTimeInterval AppDelegatServerRefreshFrequency = 5.0;
+static NSTimeInterval AppDelegatServerRefreshFrequencyBackground = 20.0;
+
+- (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    NSDictionary* defaults = @{@"display_onlyfav": @"NO",
+                               @"display_common": @"NO",
+                               @"display_pokemons": @"YES",
+                               @"display_pokestops": @"NO",
+                               @"display_gyms" : @"NO",
+                               @"display_distance" : @"NO",
+                               @"display_time" : @"NO",
+                               @"display_timer" : @"NO"};
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
+    
+    self.server = [[iPokeServerSync alloc] init];
+    self.notifier = [[PokemonNotifier alloc] init];
+    self.backgroundManager = [[CLLocationManager alloc] init];
+    
+    //used for keeping the app alive in the background
+    self.backgroundManager.delegate = self;
+    self.backgroundManager.pausesLocationUpdatesAutomatically = NO;
+    self.backgroundManager.activityType = CLActivityTypeFitness;
+    self.backgroundManager.desiredAccuracy = kCLLocationAccuracyHundredMeters; //lets try to keep this light
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 9) {
+        BOOL backgroundUpdate = YES;
+        NSMethodSignature* signature = [[CLLocationManager class] instanceMethodSignatureForSelector:@selector(setAllowsBackgroundLocationUpdates:)];
+        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setTarget:self.backgroundManager];
+        [invocation setSelector:@selector(setAllowsBackgroundLocationUpdates:)];
+        [invocation setArgument:&backgroundUpdate atIndex:2];
+        [invocation invoke];
+    }
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(serverChanged:) name:ServerChangedNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateBackgrounder) name:BackgroundSettingChangedNotification object:nil];
+    
+    return YES;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [[UINavigationBar appearance] setBarTintColor:[UIColor colorWithRed:0.15 green:0.20 blue:0.23 alpha:1.0]];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    [[UINavigationBar appearance] setTintColor:[UIColor whiteColor]];
+    
+    // Notifications
+    if([application respondsToSelector:@selector(registerUserNotificationSettings:)])
+    {
+        [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound categories:nil]];
+    }
+    
+    self.notifier.mapViewController = ((UINavigationController *)self.window.rootViewController).viewControllers.firstObject;
+    
     return YES;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+    [self.dateUpdateTimer invalidate];
+    self.dateUpdateTimer = nil;
+    
+    //we can kill this in the background, the server should keep things clean
+    [self.dataCleanTimer invalidate];
+    self.dataCleanTimer = nil;
+    
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"run_in_background"]) {
+        [self.dataFetchTimer invalidate];
+        self.dataFetchTimer = nil;
+        
+    } else {
+        //if we're going into the background lets try to slow down the notifications a bit to save battery
+        //for now we'll use once every 20 seconds or so for a check
+        [self.dataFetchTimer invalidate];
+        self.dataFetchTimer = [NSTimer timerWithTimeInterval:AppDelegatServerRefreshFrequencyBackground target:self selector:@selector(refreshDataFromServer) userInfo:nil repeats:YES];
+        [[NSRunLoop mainRunLoop] addTimer:self.dataFetchTimer forMode:NSDefaultRunLoopMode];
+    }
 }
-
-
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
-
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-}
-
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [application setApplicationIconBadgeNumber:0];
+    
+    [self updateDateText];
+    self.dateUpdateTimer = [NSTimer timerWithTimeInterval:AppDelegateTimerRefreshFrequency target:self selector:@selector(updateDateText) userInfo:nil repeats:YES];
+    [[NSRunLoop mainRunLoop] addTimer:self.dateUpdateTimer forMode:NSRunLoopCommonModes];
+    
+    if (!self.dataFetchTimer || self.dataFetchTimer.timeInterval == AppDelegatServerRefreshFrequencyBackground) {
+        [self refreshDataFromServer];
+        self.dataFetchTimer = [NSTimer timerWithTimeInterval:AppDelegatServerRefreshFrequency target:self selector:@selector(refreshDataFromServer) userInfo:nil repeats:YES];
+        [[NSRunLoop mainRunLoop] addTimer:self.dataFetchTimer forMode:NSDefaultRunLoopMode];
+    }
+    
+    if (!self.dataCleanTimer) {
+        [self cleanData];
+        self.dataCleanTimer = [NSTimer timerWithTimeInterval:AppDelegateTimerCleanFrequency target:self selector:@selector(cleanData) userInfo:nil repeats:YES];
+        [[NSRunLoop mainRunLoop] addTimer:self.dataCleanTimer forMode:NSDefaultRunLoopMode];
+    }
 }
 
+#pragma mark Local notification delegate
 
-- (void)applicationWillTerminate:(UIApplication *)application {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+{
+    UIApplicationState appState = UIApplicationStateActive;
+    if ([application respondsToSelector:@selector(applicationState)]) {
+        appState = application.applicationState;
+    }
+    
+    if (appState != UIApplicationStateActive) {
+        NSLog(@"Notification touched !");
+        [[NSNotificationCenter defaultCenter] postNotificationName:AppDelegateNotificationTapped
+                                                            object:self
+                                                          userInfo:notification.userInfo];
+    }
 }
 
+- (void)refreshDataFromServer
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        [self.server fetchData];
+    });
+}
+
+- (void)cleanData
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        NSManagedObjectContext *context = [[CoreDataPersistance sharedInstance] newWorkerContext];
+        NSFetchRequest *itemsToDeleteRequest = [[NSFetchRequest alloc] init];
+        [itemsToDeleteRequest setEntity:[NSEntityDescription entityForName:NSStringFromClass([Pokemon class]) inManagedObjectContext:context]];
+        [itemsToDeleteRequest setPredicate:[NSPredicate predicateWithFormat:@"self.disappears < %@" argumentArray:@[[NSDate date]]]];
+        [itemsToDeleteRequest setIncludesPropertyValues:NO];
+        NSArray *itemsToDelete = [context executeFetchRequest:itemsToDeleteRequest error:nil];
+        if (itemsToDelete.count > 0) {
+            NSLog(@"Purging %@ old pokemon", @(itemsToDelete.count));
+        }
+        for (NSManagedObject *itemToDelete in itemsToDelete) {
+            [context deleteObject:itemToDelete];
+        }
+        [[CoreDataPersistance sharedInstance] commitChangesAndDiscardContext:context];
+    });
+}
+
+- (void)updateDateText
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TimerLabelUpdateNotification object:nil];
+}
+
+- (void)serverChanged:(NSNotification *)notification
+{
+    [self refreshDataFromServer];
+}
+
+#pragma mark - Hack background mode
+
+- (void)updateBackgrounder
+{
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"run_in_background"]) {
+        [self.backgroundManager requestAlwaysAuthorization];
+        [self.backgroundManager startUpdatingLocation];
+        
+    } else {
+        if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways) {
+            [self.backgroundManager stopUpdatingLocation];
+        }
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusAuthorizedAlways && [[NSUserDefaults standardUserDefaults] boolForKey:@"run_in_background"]) {
+        [self.backgroundManager startUpdatingLocation];
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations
+{
+    //Nothing to do here, it's just a keepalive
+}
 
 @end

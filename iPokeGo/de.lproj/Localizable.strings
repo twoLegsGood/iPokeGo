@@ -1,3 +1,18 @@
+/* The title of the Pokémon selection for common Pokémon. */
+"Common" = "Gewöhnliche";
+
+/* The hint in a annotation callout that indicates when a Pokémon disappears. */
+"Disappears at" = "Verschwindet um %@";
+
+/* The title of the Pokémon selection for favorite Pokémon. */
+"Favorite" = "Favoriten";
+
+/* The title of a gym annotation on the map. */
+"Gym" = "Arena";
+
+/* The description of a gym annotation on the map with points. */
+"Gym points: %d" = "Arenapunkte: %d";
+
 /* The message of an alert, that tells the user that he/she denied location access to the app. */
 "Location denied, please go in settings to allow this app to use your location" = "Bitte erlaube der App den Zugriff auf Ortungsdienste, damit Pokemon in Deiner Nähe angezeigt werden können.";
 
@@ -10,29 +25,17 @@
 /* The message of an alert that tells the user, that no server was set. */
 "Please go in settings to enter server address" = "Bitte öffne die Einstellungen und füge einen Server hinzu.";
 
-/* The title of an alert that tells the user, that no server was set. */
-"Server not set" = "Kein Server angegeben";
-
-/* The title of the Pokémon selection for common Pokémon. */
-"Common" = "Gewöhnlich";
-
-/* The title of the Pokémon selection for favorite Pokémon. */
-"Favorite" = "Favoriten";
-
 /* The title of a Pokéstop annotation on the map. */
 "Pokestop" = "Pokéstop";
 
+/* The title of an annotation on the map to scan the location. */
+"Scan location" = "Position scannen";
+
+/* The title of an alert that tells the user, that no server was set. */
+"Server not set" = "Kein Server angegeben";
+
 /* The message of a Pokéstop annotation on the map. */
 "This is a pokestop" = "Dies ist ein Pokéstop";
-
-/* The title of a gym annotation on the map. */
-"Gym" = "Arena";
-
-/* The description of a gym annotation on the map with points. */
-"Gym points: %d" = "Arenapunkte: %d";
-
-/* The hint in a annotation callout that indicates when a Pokémon disappears. */
-"Disappears at %02d:%02d:%02d" = "Verschwindet um %02d:%02d:%02d";
 
 /* The hint that a certain Pokémon appeared on the map. */
 "[Pokemon] was added to the map!" = "%@ wurde der Karte hinzugefügt!";
@@ -40,5 +43,3 @@
 /* The hint that a favorite Pokémon appeared on the map. */
 "[Pokemon] your favorite pokemon was added to the map!" = "%@, dein Favorit, wurde der Karte hinzugefügt!";
 
-/* The title of an annotation on the map to scan the location. */
-"Scan location" = "Position scannen";

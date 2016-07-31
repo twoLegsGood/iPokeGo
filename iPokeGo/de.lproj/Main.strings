@@ -1,6 +1,9 @@
 /* Class = "UILabel"; text = "Normal Notification"; ObjectID = "4fQ-bY-gce"; */
 "4fQ-bY-gce.text" = "Normale";
 
+/* Class = "UILabel"; text = "Vibration"; ObjectID = "7ko-iA-AHA"; */
+"7ko-iA-AHA.text" = "Vibration";
+
 /* Class = "UILabel"; text = "Notifications"; ObjectID = "8Xl-BM-0fo"; */
 "8Xl-BM-0fo.text" = "Benachrichtigungen";
 

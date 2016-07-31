@@ -9,6 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "global.h"
 
+extern NSString * const SettingsChangedNotification;
+extern NSString * const ServerChangedNotification;
+extern NSString * const BackgroundSettingChangedNotification;
+
 @interface SettingsTableViewController : UITableViewController
 
 @property(weak, nonatomic) IBOutlet UIBarButtonItem *fermerButton;
@@ -26,6 +30,10 @@
 @property(weak, nonatomic) IBOutlet UILabel *pokestopsLabel;
 @property(weak, nonatomic) IBOutlet UISwitch *pokestopsSwitch;
 
+@property(weak, nonatomic) IBOutlet UIImageView *backgroundImageView;
+@property(weak, nonatomic) IBOutlet UILabel *backgroundLabel;
+@property(weak, nonatomic) IBOutlet UISwitch *backgroundSwitch;
+
 @property(weak, nonatomic) IBOutlet UIImageView *gymsImageView;
 @property(weak, nonatomic) IBOutlet UILabel *gymsLabel;
 @property(weak, nonatomic) IBOutlet UISwitch *gymsSwitch;
@@ -33,6 +41,10 @@
 @property(weak, nonatomic) IBOutlet UIImageView *commonImageView;
 @property(weak, nonatomic) IBOutlet UILabel *commonLabel;
 @property(weak, nonatomic) IBOutlet UISwitch *commonSwitch;
+
+@property (weak, nonatomic) IBOutlet UIImageView *viewOnlyFavoriteImageView;
+@property (weak, nonatomic) IBOutlet UILabel *viewOnlyFavoriteLabel;
+@property (weak, nonatomic) IBOutlet UISwitch *viewOnlyFavoriteSwitch;
 
 @property (weak, nonatomic) IBOutlet UIImageView *distanceImageView;
 @property (weak, nonatomic) IBOutlet UILabel *distanceLabel;
